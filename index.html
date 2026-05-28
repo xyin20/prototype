@@ -1,0 +1,182 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Ziva Wealth Guidance Prototype</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div class="app-shell">
+    <aside class="rail">
+      <div class="brand">Ziva Wealth</div>
+      <div class="profile">
+        <div class="avatar">A</div>
+        <div>
+          <strong id="profileName">Andrea</strong>
+          <span>Testing profile</span>
+        </div>
+      </div>
+      <div class="metrics">
+        <div><b id="dayCount">148</b><span>Days in training</span></div>
+        <div><b id="diamondCount">7,600</b><span>Diamonds</span></div>
+      </div>
+      <div class="stage-box">
+        <h2>Current Life Stage</h2>
+        <div id="stageSummary" class="chip-list"></div>
+      </div>
+      <button class="ghost full" id="resetFlow" type="button">Reset Flow</button>
+    </aside>
+
+    <main>
+      <header class="topbar">
+        <nav aria-label="Prototype sections">
+          <button class="nav-link active" data-nav="prepare" type="button">Home</button>
+          <button class="nav-link" data-nav="rooms" type="button">Rooms</button>
+          <button class="nav-link" data-nav="modules" type="button">Modules</button>
+          <button class="nav-link" data-nav="tool" type="button">Tool</button>
+          <button class="nav-link" data-nav="gallery" type="button">Graphs</button>
+        </nav>
+        <div class="wallet">
+          <span class="gem"></span>
+          <strong id="walletDiamonds">7,600</strong>
+          <strong id="cashTotal">$75,762.94</strong>
+        </div>
+      </header>
+
+      <section class="screen gradient-screen active" id="prepare">
+        <div class="center-panel compact-panel">
+          <p class="eyebrow">Step 1</p>
+          <h1>What can I prepare you for?</h1>
+          <p>Select all that apply, then continue into a room.</p>
+          <div class="choice-wrap" id="lifeStageChoices"></div>
+          <button class="primary next-step" data-target="rooms" type="button">Continue</button>
+        </div>
+      </section>
+
+      <section class="screen gradient-screen" id="rooms">
+        <div class="wide-panel">
+          <p class="eyebrow">Step 2</p>
+          <h1>How would you like to learn from my home?</h1>
+          <div class="room-grid" id="roomChoices"></div>
+        </div>
+      </section>
+
+      <section class="screen" id="modules">
+        <div class="page-heading">
+          <p class="eyebrow">Step 3</p>
+          <h1><span id="moduleRoom">Investment</span> Modules</h1>
+          <p>Dive into bite-sized quizzes tailored to the stages you selected.</p>
+        </div>
+        <div class="module-card">
+          <div class="module-head">
+            <div>
+              <h2>Module 1</h2>
+              <p id="moduleDescription">Custodian banks, investment timelines, and risk mix.</p>
+            </div>
+            <span class="status" id="moduleStatus">Ready</span>
+          </div>
+          <div class="progress-track"><span id="moduleProgress"></span></div>
+          <dl class="module-stats">
+            <div><dt>Progress</dt><dd id="quizProgress">0/6</dd></div>
+            <div><dt>Guidance</dt><dd id="guidanceLabel">Profile not started</dd></div>
+            <div><dt>Reward</dt><dd>+200 diamonds</dd></div>
+          </dl>
+          <div class="button-row">
+            <button class="primary" id="startQuiz" type="button">Start Quiz</button>
+            <button class="ghost next-step" data-target="tool" type="button">Skip to Tool</button>
+          </div>
+        </div>
+      </section>
+
+      <section class="screen" id="quiz">
+        <div class="quiz-shell">
+          <div class="question-pane">
+            <span class="question-badge" id="questionNumber">Q.1</span>
+            <h1 id="questionText">What is a custodian bank?</h1>
+          </div>
+          <div class="answer-pane" id="answerPane"></div>
+        </div>
+      </section>
+
+      <section class="screen" id="tool">
+        <div class="page-heading">
+          <p class="eyebrow">Step 4</p>
+          <h1>Hello Andrea</h1>
+          <p>Adjust the guidance inputs and review how the forecast changes.</p>
+        </div>
+        <div class="tool-layout">
+          <form class="tool-form" id="toolForm">
+            <label>
+              Goal
+              <select id="goal">
+                <option>Retirement</option>
+                <option>Home Purchase</option>
+                <option>Education</option>
+                <option>Emergency Fund</option>
+              </select>
+            </label>
+            <label>
+              Initial investment
+              <input id="initial" type="number" min="0" step="500" value="5000">
+            </label>
+            <label>
+              Investment duration
+              <input id="years" type="range" min="1" max="40" value="5">
+              <span class="range-value"><b id="yearsValue">5</b> years</span>
+            </label>
+            <label>
+              Monthly contribution
+              <input id="monthly" type="number" min="0" step="50" value="500">
+            </label>
+            <label>
+              Stock and bond mix
+              <input id="stockMix" type="range" min="0" max="100" value="60">
+              <span class="range-value"><b id="stockValue">60</b>% stocks / <b id="bondValue">40</b>% bonds</span>
+            </label>
+          </form>
+
+          <section class="forecast-card" aria-label="Investment forecast">
+            <div class="forecast-head">
+              <div>
+                <p class="eyebrow">Investment Profit Forecast</p>
+                <h2 id="recommendation">Balanced growth path</h2>
+              </div>
+              <button class="ghost" id="completeTool" type="button">Complete Guidance</button>
+            </div>
+            <div class="bar-chart" id="barChart"></div>
+            <div class="insight-strip">
+              <span id="riskInsight">Moderate risk profile</span>
+              <span id="timeInsight">5 year horizon</span>
+              <span id="contributionInsight">$500 monthly</span>
+            </div>
+          </section>
+        </div>
+      </section>
+
+      <section class="screen" id="summary">
+        <div class="summary-panel">
+          <p class="eyebrow">Flow Complete</p>
+          <h1>Your guidance path is ready to test.</h1>
+          <p id="summaryText"></p>
+          <div class="button-row">
+            <button class="primary next-step" data-target="prepare" type="button">Try Another Path</button>
+            <button class="ghost next-step" data-target="gallery" type="button">Review Source Graphs</button>
+          </div>
+        </div>
+      </section>
+
+      <section class="screen" id="gallery">
+        <div class="page-heading">
+          <p class="eyebrow">Reference Graphs</p>
+          <h1>Screens Found In This Folder</h1>
+          <p>Use these as checkpoints while comparing the clickable prototype to the original flow.</p>
+        </div>
+        <div class="gallery-grid" id="galleryGrid"></div>
+      </section>
+    </main>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
