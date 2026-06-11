@@ -69,6 +69,69 @@ const gameCategories = [
   { id: "sandbox", label: "123456", icon: "game", live: false },
 ];
 
+const loungeThreads = [
+  {
+    title: "How do you navigate challenges in a traditionally male-dominated industry?",
+    comments: 224,
+    variant: "is-coral",
+  },
+  {
+    title: "What are your thoughts on side hustles? And how do you manage multiple income streams?",
+    comments: 156,
+    variant: "is-violet",
+  },
+  {
+    title: "How do you discuss finances with friends or peers who might have different financial priorities?",
+    comments: 84,
+    variant: "is-gold",
+  },
+  {
+    title: "What money habit made the biggest difference in your first job?",
+    comments: 91,
+    variant: "is-green",
+  },
+];
+
+const libraryArticles = [
+  {
+    title: "Simran Kaur Aims To Make Investing More Approachable For All Women, With Top Podcast And Book, 'Girls That Invest'",
+    source: "Forbes",
+    date: "06.05.2024",
+    variant: "is-chair",
+  },
+  {
+    title: "This chart-topping South Asian duo is inspiring women to take charge of their finances",
+    source: "Vogue India",
+    date: "02.24.2022",
+    variant: "is-portrait",
+  },
+  {
+    title: "Five myths about women and money that need to be debunked",
+    source: "The Washington Post",
+    date: "01.15.2024",
+    variant: "is-neon",
+  },
+  {
+    title: "How much do you know about the women who made financial history?",
+    source: "The Michigan Post",
+    date: "01.16.2024",
+    variant: "is-cards",
+  },
+];
+
+const consultants = [
+  {
+    name: "Orina Chang",
+    role: "Founder, impact investor, educator, and entrepreneur",
+    variant: "is-orina",
+  },
+  {
+    name: "Jane Doe",
+    role: "Finance advisor, investor, and entrepreneur",
+    variant: "is-jane",
+  },
+];
+
 const quizQuestions = [
   {
     question: "What is a custodian bank?",
@@ -408,15 +471,15 @@ function flowStep(number, title, detail, done) {
 function renderActiveRoom() {
   switch (state.activeRoom) {
     case "lounge":
-      return renderConstruction("Lounge", "Lounge discussion rooms are clickable, but real social content is not part of this demo build yet.", "glass");
+      return renderLounge();
     case "game":
       return renderGameRoom();
     case "library":
-      return renderConstruction("Library", "Library cards are represented as a placeholder until article, podcast, and video assets are ready.", "book");
+      return renderLibrary();
     case "tool":
       return renderToolChamber();
     case "classroom":
-      return renderConstruction("Classroom", "Consultant booking is represented as a placeholder until scheduling and consultant assets are ready.", "person");
+      return renderClassroom();
     case "faq":
       return renderFaq();
     case "treasure":
@@ -469,8 +532,8 @@ function renderHome() {
       <article class="black-card route-card">
         ${icon("spark")}
         <div>
-          <h2>Placeholder Rooms</h2>
-          <p>Lounge, Library, and Classroom open under-construction states for the demo.</p>
+          <h2>Demo Rooms</h2>
+          <p>Lounge, Library, and Classroom now use the demo update layouts for chat, content, and booking.</p>
         </div>
         <button class="tiny-button is-green" type="button" data-action="next-view" data-view="rooms">View rooms</button>
       </article>
@@ -489,6 +552,124 @@ function renderConstruction(title, copy, glyph) {
         <span></span><span></span><span></span>
       </div>
       <button class="ghost-button is-green" type="button" data-action="nav-room" data-room="game">Go to Game Room</button>
+    </section>
+  `;
+}
+
+function renderLounge() {
+  const filters = ["Popular", "Following", "Saved", "My comments"]
+    .map((label, index) => `<button class="room-filter${index === 0 ? " is-active" : ""}" type="button">${label}</button>`)
+    .join("");
+  const cards = loungeThreads
+    .map(
+      (thread) => `
+      <article class="lounge-card ${thread.variant}">
+        <div class="lounge-card-art">
+          <h2>${thread.title}</h2>
+        </div>
+        <div class="lounge-social-row">
+          <span>${icon("heart")} 1.3k</span>
+          <span>${icon("comment")} ${thread.comments}</span>
+          <span>${icon("book")}</span>
+        </div>
+        <div class="lounge-comment-preview">
+          <span class="mini-avatar"></span>
+          <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Come keep reading.</p>
+        </div>
+        <button class="room-link-button" type="button">View all ${thread.comments} comments</button>
+      </article>`
+    )
+    .join("");
+  const interests = ["Investing", "First Job", "Budgeting", "Retirement", "Side Hustles"]
+    .map((item, index) => `<article class="interest-card is-${index + 1}"><span>${item}</span></article>`)
+    .join("");
+
+  return `
+    <section class="room-demo lounge-demo">
+      <header class="room-demo-head">
+        <h1>Lounge ${icon("glass")}</h1>
+        <p>Find chatrooms with users who share your interests and questions.</p>
+        <div class="room-filter-row">${filters}</div>
+      </header>
+      <div class="horizontal-rail">${cards}</div>
+      <section class="room-section-head">
+        <h2>Interests</h2>
+        <button class="tiny-button" type="button">See all</button>
+      </section>
+      <div class="interest-rail">${interests}</div>
+    </section>
+  `;
+}
+
+function renderLibrary() {
+  const cards = libraryArticles
+    .map(
+      (article) => `
+      <article class="library-card">
+        <h2>${article.title}</h2>
+        <p>${article.source}<br>${article.date}</p>
+        <div class="library-art ${article.variant}"></div>
+      </article>`
+    )
+    .join("");
+  const mediaCards = ["Podcast", "Book Club", "Video Course", "Starter Guide", "Money Diary"]
+    .map((label, index) => `<article class="media-card is-${index + 1}"><span>${label}</span></article>`)
+    .join("");
+
+  return `
+    <section class="room-demo library-demo">
+      <header class="room-demo-head library-head">
+        <div>
+          <h1>Latest Articles <span class="room-mini-badge" aria-hidden="true"></span></h1>
+          <p>345 Articles</p>
+        </div>
+        <button class="tiny-button" type="button">Explore...</button>
+      </header>
+      <div class="horizontal-rail article-rail">${cards}</div>
+      <section class="media-section">
+        <h2>Books, Podcasts, Videos & More...</h2>
+        <div class="media-rail">${mediaCards}</div>
+      </section>
+    </section>
+  `;
+}
+
+function renderClassroom() {
+  const weekdays = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"]
+    .map((day) => `<span>${day}</span>`)
+    .join("");
+  const dates = Array.from({ length: 30 }, (_, index) => index + 1)
+    .map((date) => `<button class="calendar-date${date === 23 ? " is-selected" : ""}" type="button">${date}</button>`)
+    .join("");
+  const consultantCards = consultants
+    .map(
+      (person) => `
+      <article class="consultant-card">
+        <div class="consultant-photo ${person.variant}"></div>
+        <h3>${person.name}</h3>
+        <p>${person.role}</p>
+        <small>Learn more...</small>
+      </article>`
+    )
+    .join("");
+
+  return `
+    <section class="classroom-demo">
+      <div class="classroom-main">
+        <header class="room-demo-head">
+          <h1>Classroom <span class="room-mini-badge" aria-hidden="true"></span></h1>
+          <p>Book a consultation with top financial experts to get personalized advice, answers to your questions, or an in-depth discussion on your financial goals. Whether you're planning for retirement, investing, or managing debt, our trusted professionals are here to help you make informed decisions.</p>
+        </header>
+        <section class="calendar-panel" aria-label="September 2024 calendar">
+          <h2>September 2024 <span aria-hidden="true">v</span></h2>
+          <div class="weekday-grid">${weekdays}</div>
+          <div class="date-grid">${dates}</div>
+        </section>
+      </div>
+      <aside class="consultant-panel">
+        <h2>Consultants <span aria-hidden="true">v</span></h2>
+        <div class="consultant-list">${consultantCards}</div>
+      </aside>
     </section>
   `;
 }
@@ -618,32 +799,44 @@ function renderToolChamber() {
           <label><span class="step-dot">4</span> Monthly contribution (Additional)</label>
           <input class="dark-input" type="number" min="0" step="50" data-field="monthly" value="${state.tool.monthly}" />
         </div>
-        <div class="tool-question wide">
-          <label><span class="step-dot">5</span> Adjust your bounds & investment mix.</label>
-          <div class="range-wrap">
-            <input type="range" min="0" max="100" step="1" data-field="stock" value="${state.tool.stock}" />
-            <div class="range-labels"><span>${state.tool.stock}% Stocks</span><strong>${100 - state.tool.stock}% Bonds</strong></div>
+        <div class="tool-question tool-mix-step">
+          <div class="mix-copy">
+            <label><span class="step-dot">5</span> Adjust your bounds & investment mix.</label>
+            <p>${result.summary}</p>
+            <div class="range-wrap">
+              <input type="range" min="0" max="100" step="1" data-field="stock" value="${state.tool.stock}" />
+              <div class="range-labels"><span>${state.tool.stock}% Stocks</span><strong>${100 - state.tool.stock}% Bonds</strong></div>
+            </div>
+            <div class="mix-stat-grid">
+              <span><strong>${formatCurrency(result.total)}</strong> projected balance</span>
+              <span><strong>${state.tool.years} years</strong> time horizon</span>
+            </div>
           </div>
+          <section class="forecast-panel mix-forecast">
+            <p>Investment Profit Forecast</p>
+            <div class="forecast-chart">
+              ${result.bars
+                .map(
+                  (bar, index) => {
+                    const displayHeight = bar.value < 0 ? Math.min(bar.height, 30) : Math.min(bar.height, 58);
+                    return `
+              <div class="forecast-column">
+                <strong>${bar.label}</strong>
+                <div class="forecast-plot">
+                  ${index === 0 ? '<span class="baseline">Baseline $0</span>' : ""}
+                  <div class="forecast-bar ${bar.value < 0 ? "is-negative" : ""}" style="--bar-height: ${displayHeight}%;">
+                    <span>${formatCurrency(bar.value)}</span>
+                  </div>
+                </div>
+                <small>${state.tool.stock}% STK</small>
+              </div>`;
+                  }
+                )
+                .join("")}
+            </div>
+          </section>
         </div>
       </div>
-      <section class="forecast-panel">
-        <p>Investment Profit Forecast</p>
-        <div class="forecast-chart">
-          ${result.bars
-            .map(
-              (bar) => `
-            <div class="forecast-column">
-              <strong>${bar.label}</strong>
-              <div class="forecast-bar ${bar.value < 0 ? "is-negative" : ""}" style="height: ${bar.height}%;">
-                <span>${formatCurrency(bar.value)}</span>
-              </div>
-              <small>${state.tool.stock}% STK</small>
-            </div>`
-            )
-            .join("")}
-        </div>
-        <div class="baseline">Baseline $0</div>
-      </section>
       <div class="toolbar-row">
         <button class="ghost-button is-green" type="button" data-action="save-tool">${icon("diamond")} Save forecast</button>
         <button class="ghost-button" type="button" data-action="game-stage" data-stage="modules">Review module</button>
@@ -768,6 +961,8 @@ function calculateTool() {
   const worst = Math.round(base * (Math.pow(1 - (0.03 + stock * 0.08), years / 5) - 1));
   const max = Math.max(Math.abs(best), Math.abs(avg), Math.abs(worst), 1);
   return {
+    total: Math.round(base + avg),
+    summary: `This mix models ${Number(state.tool.stock)}% stocks and ${100 - Number(state.tool.stock)}% bonds against best, average, and worst-case profit ranges.`,
     bars: [
       { label: "Best Profit", value: best, height: Math.max(24, Math.round((Math.abs(best) / max) * 86)) },
       { label: "Avg Profit", value: avg, height: Math.max(18, Math.round((Math.abs(avg) / max) * 70)) },
