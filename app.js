@@ -195,6 +195,23 @@ const quizQuestions = [
   },
 ];
 
+const TUTORIAL_REWARD = 25;
+
+function createTutorialState() {
+  return {
+    navHintsDismissed: false,
+    modal: "",
+    seenRooms: {
+      game: false,
+      tool: false,
+    },
+    reward: null,
+    sliderStage: "waiting",
+    sliderTouched: false,
+    chartMagic: false,
+  };
+}
+
 const state = {
   view: "welcome",
   authMode: "create",
@@ -223,6 +240,7 @@ const state = {
     monthly: 500,
     stock: 60,
   },
+  tutorial: createTutorialState(),
 };
 
 const app = document.querySelector("#app");
@@ -455,6 +473,7 @@ function renderWorkspace() {
 
       <main class="content">${renderActiveRoom()}</main>
       ${renderZivaAssistant()}
+      ${renderTutorialLayer()}
     </div>
   `;
 }
@@ -805,6 +824,7 @@ function renderToolChamber() {
             <p>${result.summary}</p>
             <div class="range-wrap">
               <input type="range" min="0" max="100" step="1" data-field="stock" value="${state.tool.stock}" />
+              ${renderToolSliderGuide()}
               <div class="range-labels"><span>${state.tool.stock}% Stocks</span><strong>${100 - state.tool.stock}% Bonds</strong></div>
             </div>
             <div class="mix-stat-grid">
@@ -814,7 +834,7 @@ function renderToolChamber() {
           </div>
           <section class="forecast-panel mix-forecast">
             <p>Investment Profit Forecast</p>
-            <div class="forecast-chart">
+            <div class="forecast-chart${state.tutorial.chartMagic ? " is-magic" : ""}">
               ${result.bars
                 .map(
                   (bar, index) => {
@@ -939,6 +959,105 @@ function renderZivaAssistant() {
   `;
 }
 
+function renderTutorialLayer() {
+  if (state.view !== "workspace") return "";
+  const parts = [
+    renderRoomIntroHints(),
+    renderTutorialModal(),
+    renderRewardAnimation(),
+  ].filter(Boolean);
+  return parts.length ? `<div class="tutorial-layer" aria-live="polite">${parts.join("")}</div>` : "";
+}
+
+function renderRoomIntroHints() {
+  if (state.activeRoom !== "home" || state.tutorial.navHintsDismissed) return "";
+  return `
+    <div class="tutorial-nav-hints">
+      <article class="tutorial-nav-callout is-game">
+        <span class="tutorial-arrow is-up"></span>
+        <strong>Game Room</strong>
+        <p>Play quick challenges and earn diamonds while learning.</p>
+        <button class="tiny-button is-green" type="button" data-action="nav-room" data-room="game">Try Game Room</button>
+      </article>
+      <article class="tutorial-nav-callout is-tool">
+        <span class="tutorial-arrow is-up"></span>
+        <strong>Tool Chamber</strong>
+        <p>Let's imagine your future together.</p>
+        <button class="tiny-button" type="button" data-action="nav-room" data-room="tool">Try Tool Chamber</button>
+      </article>
+      <button class="tutorial-dismiss" type="button" data-action="dismiss-nav-hints">Skip guide</button>
+    </div>
+  `;
+}
+
+function renderTutorialModal() {
+  const modalCopy = {
+    game:
+      "Don't worry if you get something wrong. Every question is part of the journey. There are no penalties here - just explore and learn.",
+    tool: "This room helps you explore different financial futures.",
+  };
+  if (!state.tutorial.modal) return "";
+  return `
+    <div class="tutorial-modal-backdrop">
+      <section class="tutorial-modal" role="dialog" aria-modal="true" aria-label="Ziva tip">
+        <span class="tutorial-ziva-mark">Ziva 小提示</span>
+        <p>${modalCopy[state.tutorial.modal]}</p>
+        <button class="ghost-button is-green" type="button" data-action="close-tutorial-modal">Got it</button>
+      </section>
+    </div>
+  `;
+}
+
+function renderRewardAnimation() {
+  if (!state.tutorial.reward) return "";
+  return `
+    <div class="tutorial-reward-toast">
+      <strong>Ziva</strong>
+      <p>You earned ${state.tutorial.reward.amount} diamonds ✨!</p>
+    </div>
+    <div class="tutorial-diamond-flight" aria-hidden="true"></div>
+  `;
+}
+
+function renderToolSliderGuide() {
+  if (state.activeRoom !== "tool" || !["slider", "stock", "bond", "free"].includes(state.tutorial.sliderStage)) {
+    return "";
+  }
+  const copy = {
+    slider: {
+      title: "Let's explore different investment styles.",
+      detail: "",
+      arrow: "is-down",
+    },
+    stock: {
+      title: "More Stock More Aggressive",
+      detail: "Higher growth potential with larger market swings.",
+      arrow: "is-left",
+    },
+    bond: {
+      title: "More Bond More Conservative",
+      detail: "Lower risk, slower growth, more stability.",
+      arrow: "is-right",
+    },
+    free: {
+      title: "不同选择 → 不同人生结果",
+      detail: "现在是你自己探索的时刻了",
+      arrow: "is-down",
+    },
+  }[state.tutorial.sliderStage];
+  const knobLeft = Math.max(3, Math.min(97, Number(state.tool.stock) || 0));
+  return `
+    <div class="slider-tutorial-guide ${state.tutorial.sliderStage}" style="--knob-left: ${knobLeft}%;">
+      <span class="slider-guide-pulse" aria-hidden="true"></span>
+      <article class="slider-guide-card">
+        <span class="tutorial-arrow ${copy.arrow}"></span>
+        <strong>${copy.title}</strong>
+        ${copy.detail ? `<p>${copy.detail}</p>` : ""}
+      </article>
+    </div>
+  `;
+}
+
 function assistantCopy() {
   if (state.activeRoom === "tool") {
     return `Your ${state.tool.years}-year ${state.tool.goal.toLowerCase()} forecast uses ${state.tool.stock}% stocks and ${100 - state.tool.stock}% bonds.`;
@@ -985,11 +1104,55 @@ function escapeAttr(value) {
   return String(value).replaceAll("&", "&amp;").replaceAll('"', "&quot;");
 }
 
+function startRoomTutorial(room) {
+  if ((room === "game" || room === "tool") && !state.tutorial.seenRooms[room]) {
+    state.tutorial.modal = room;
+    state.tutorial.seenRooms[room] = true;
+  }
+  if (room === "tool" && state.tutorial.sliderStage === "waiting") {
+    state.tutorial.chartMagic = false;
+  }
+}
+
+function advanceSliderTutorialOnInput() {
+  if (state.activeRoom !== "tool") return;
+  if (state.tutorial.sliderStage === "stock") {
+    state.tutorial.sliderStage = "bond";
+  } else if (state.tutorial.sliderStage === "bond") {
+    state.tutorial.sliderStage = "free";
+  }
+}
+
+function activateSliderTutorial() {
+  if (state.activeRoom !== "tool") return;
+  if (state.tutorial.sliderStage === "waiting" || state.tutorial.sliderStage === "slider") {
+    state.tutorial.sliderStage = "stock";
+  }
+}
+
+function showChartMagic() {
+  if (state.activeRoom !== "tool") return;
+  state.tutorial.chartMagic = true;
+}
+
+function handleTutorialScroll() {
+  if (state.view !== "workspace" || state.activeRoom !== "tool" || state.tutorial.modal) return;
+  if (state.tutorial.sliderStage !== "waiting") return;
+  const slider = document.querySelector(".tool-mix-step");
+  if (!slider) return;
+  const rect = slider.getBoundingClientRect();
+  if (rect.top < window.innerHeight * 0.74 && rect.bottom > window.innerHeight * 0.18) {
+    state.tutorial.sliderStage = "slider";
+    render();
+  }
+}
+
 function routeToWorkspace(room) {
   state.view = "workspace";
   state.activeRoom = room;
   if (room === "game" && !state.gameStage) state.gameStage = "categories";
   state.zivaOpen = false;
+  startRoomTutorial(room);
 }
 
 app.addEventListener("click", (event) => {
@@ -1007,6 +1170,15 @@ app.addEventListener("click", (event) => {
   if (action === "next-view") {
     state.view = target.dataset.view;
     scrollToTop = true;
+  }
+
+  if (action === "dismiss-nav-hints") {
+    state.tutorial.navHintsDismissed = true;
+  }
+
+  if (action === "close-tutorial-modal") {
+    state.tutorial.modal = "";
+    if (state.activeRoom === "tool") window.setTimeout(handleTutorialScroll, 120);
   }
 
   if (action === "close-daily") {
@@ -1044,6 +1216,7 @@ app.addEventListener("click", (event) => {
     state.quizChecked = false;
     state.showDailyModal = false;
     state.zivaOpen = false;
+    state.tutorial = createTutorialState();
     scrollToTop = true;
   }
 
@@ -1066,6 +1239,7 @@ app.addEventListener("click", (event) => {
     state.activeRoom = "game";
     state.gameStage = target.dataset.stage;
     state.comingSoon = "";
+    startRoomTutorial("game");
     scrollToTop = true;
   }
 
@@ -1075,6 +1249,13 @@ app.addEventListener("click", (event) => {
 
   if (action === "check-answer" && state.quizChoice !== null) {
     state.quizChecked = true;
+    if (state.quizChoice === quizQuestions[state.quizIndex].correct) {
+      state.diamonds += TUTORIAL_REWARD;
+      state.tutorial.reward = {
+        amount: TUTORIAL_REWARD,
+        id: Date.now(),
+      };
+    }
   }
 
   if (action === "next-question") {
@@ -1124,6 +1305,13 @@ app.addEventListener("click", (event) => {
   if (scrollToTop) window.scrollTo({ top: 0, left: 0 });
 });
 
+app.addEventListener("pointerdown", (event) => {
+  const range = event.target.closest('input[data-field="stock"]');
+  if (!range) return;
+  activateSliderTutorial();
+  render();
+});
+
 app.addEventListener("change", (event) => {
   const field = event.target.dataset.field;
   if (!field) return;
@@ -1131,6 +1319,9 @@ app.addEventListener("change", (event) => {
     state.tool.goal = event.target.value || "Retirement";
   } else {
     state.tool[field] = Number(event.target.value);
+  }
+  if (field === "stock") {
+    showChartMagic();
   }
   render();
 });
@@ -1142,6 +1333,10 @@ app.addEventListener("input", (event) => {
     state.tool.goal = event.target.value || "Retirement";
   } else {
     state.tool[field] = Number(event.target.value);
+  }
+  if (field === "stock") {
+    showChartMagic();
+    advanceSliderTutorialOnInput();
   }
   render();
 });
@@ -1159,5 +1354,7 @@ app.addEventListener("submit", (event) => {
     window.scrollTo({ top: 0, left: 0 });
   }
 });
+
+window.addEventListener("scroll", handleTutorialScroll, { passive: true });
 
 render();
